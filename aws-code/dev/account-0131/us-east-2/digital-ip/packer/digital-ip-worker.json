@@ -1,0 +1,45 @@
+{
+	"variables": {
+		"aws_access_key": "",
+		"aws_secret_key": ""
+	},
+	"builders": [{
+		"type": "amazon-ebs",
+		"access_key": "{{user `aws_access_key`}}",
+		"secret_key": "{{user `aws_secret_key`}}",
+		"region": "{{user `aws_region`}}",
+		"source_ami_filter": {
+			"filters": {
+				"virtualization-type": "hvm",
+				"name": "amzn2-ami-hvm-2.0.20200917.0-x86_64-gp2",
+				"root-device-type": "ebs"
+			},
+			"owners": [
+				"amazon"
+			],
+			"most_recent": true
+		},
+        "launch_block_device_mappings": [
+            {
+               "device_name": "/dev/xvda",
+               "volume_size": 20,
+               "delete_on_termination": true
+            }
+          ],
+		"instance_type": "t2.xlarge",
+		"ssh_username": "{{user `ssh_username`}}",
+		"ami_name": "digital-ip-worker-ami-updated",
+
+
+		"tags": {
+			"CreatedBy": "{{user `created_by`}}",
+            "project": "{{user `project`}}",
+			"AMI": "digital-ip-worker-ami-updated"
+
+		}
+	}],
+	"provisioners": [{
+		"type": "shell",
+		"script": "digital-ip-worker.sh"
+	}]
+}

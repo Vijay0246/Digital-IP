@@ -1,0 +1,1436 @@
+rbac:
+  create: true
+
+podSecurityPolicy:
+  enabled: false
+
+imagePullSecrets:
+
+serviceAccounts:
+  alertmanager:
+    create: false
+    name:
+    annotations: {}
+  nodeExporter:
+    create: true
+    name:
+    annotations: {}
+  pushgateway:
+    create: false
+    name:
+    annotations: {}
+  server:
+    create: true
+    name: 
+    annotations: {}
+
+alertmanager:
+
+  enabled: true
+
+  useClusterRole: true
+
+  useExistingRole: false
+
+  name: alertmanager
+
+  image:
+    repository: quay.io/prometheus/alertmanager
+    tag: v0.21.0
+    pullPolicy: IfNotPresent
+
+  priorityClassName: ""
+
+  extraArgs: {}
+
+  extraInitContainers: []
+
+  prefixURL: ""
+
+  baseURL: "http://localhost:9093"
+
+  extraEnv: {}
+
+  extraSecretMounts: []
+
+  configMapOverrideName: ""
+
+  configFromSecret: ""
+
+  configFileName: alertmanager.yml
+
+  ingress:
+
+    enabled: true
+
+    annotations: {}
+
+    extraLabels: {}
+
+    hosts:
+       - alertmanager2.co.reefplatform.com
+ 
+    extraPaths: []
+
+    tls: []
+
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+  tolerations: []
+
+  ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
+  nodeSelector: {}
+
+  affinity: {}
+
+  ## ref: https://kubernetes.io/docs/concepts/workloads/pods/disruptions/
+  podDisruptionBudget:
+    enabled: false
+    maxUnavailable: 1
+
+  ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
+  persistentVolume:
+
+    enabled: true
+
+    ## Ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+    accessModes:
+      - ReadWriteOnce
+
+    annotations: {}
+
+    existingClaim: ""
+
+    mountPath: /data
+
+    size: 2Gi
+
+    subPath: ""
+
+  emptyDir:
+
+    sizeLimit: ""
+
+  podAnnotations: {}
+
+  podLabels: {}
+
+  ## Ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/
+  podSecurityPolicy:
+    annotations: {}
+
+  replicaCount: 1
+
+  deploymentAnnotations: {}
+
+  statefulSet:
+
+    enabled: false
+
+    annotations: {}
+    labels: {}
+    podManagementPolicy: OrderedReady
+
+    ## Alertmanager headless service to use for the statefulset
+    ##
+    headless:
+      annotations: {}
+      labels: {}
+
+      ## Ref: https://github.com/prometheus/alertmanager/blob/master/README.md
+      enableMeshPeer: false
+
+      servicePort: 80
+
+  ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  resources: {}
+
+  dnsConfig: {}
+
+  securityContext:
+    runAsUser: 65534
+    runAsNonRoot: true
+    runAsGroup: 65534
+    fsGroup: 65534
+
+  service:
+    annotations: {}
+    labels: {}
+    clusterIP: ""
+
+    ## Ref: https://kubernetes.io/docs/user-guide/services/#external-ips
+    externalIPs: []
+
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    servicePort: 80
+    # nodePort: 30000
+    sessionAffinity: None
+    type: ClusterIP
+
+## Ref: https://github.com/jimmidyson/configmap-reload
+configmapReload:
+  prometheus:
+    enabled: true
+
+    name: configmap-reload
+
+    image:
+      repository: jimmidyson/configmap-reload
+      tag: v0.5.0
+      pullPolicy: IfNotPresent
+
+    extraArgs: {}
+
+    extraVolumeDirs: []
+
+    extraConfigmapMounts: []
+
+    resources: {}
+  alertmanager:
+
+    enabled: false
+
+    name: configmap-reload
+
+    image:
+      repository: jimmidyson/configmap-reload
+      tag: v0.5.0
+      pullPolicy: IfNotPresent
+
+    extraArgs: {}
+
+    extraVolumeDirs: []
+
+    extraConfigmapMounts: []
+
+    resources: {}
+
+kubeStateMetrics:
+
+  enabled: true
+
+nodeExporter:
+
+  enabled: true
+
+  hostNetwork: true
+
+  hostPID: true
+
+  name: node-exporter
+
+  image:
+    repository: quay.io/prometheus/node-exporter
+    tag: v1.0.1
+    pullPolicy: IfNotPresent
+
+  podSecurityPolicy:
+    annotations: {}
+
+  priorityClassName: ""
+
+  updateStrategy:
+    type: RollingUpdate
+
+  extraArgs: {}
+
+  extraInitContainers: []
+
+  extraHostPathMounts: []
+
+  extraConfigmapMounts: []
+
+  tolerations: []
+
+  nodeSelector: {}
+
+  podAnnotations: {}
+
+  pod:
+    labels: {}
+
+  podDisruptionBudget:
+    enabled: false
+    maxUnavailable: 1
+
+  resources: {}
+
+  dnsConfig: {}
+  securityContext:
+    fsGroup: 65534
+    runAsGroup: 65534
+    runAsNonRoot: true
+    runAsUser: 65534
+
+  service:
+    annotations:
+      prometheus.io/scrape: "true"
+    labels: {}
+
+    clusterIP: None
+
+    externalIPs: []
+
+    hostPort: 9100
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    servicePort: 9100
+    type: ClusterIP
+
+server:
+
+  enabled: true
+
+  name: server
+
+  sidecarContainers: {}
+
+  image:
+    repository: quay.io/prometheus/prometheus
+    tag: v2.24.0
+    pullPolicy: IfNotPresent
+
+  priorityClassName: ""
+
+  enableServiceLinks: true
+
+  prefixURL: ""
+
+  baseURL: ""
+
+  env: []
+
+  extraFlags:
+    - web.enable-lifecycle
+
+  configPath: /etc/config/prometheus.yml
+
+  global:
+
+    scrape_interval: 1m
+
+    scrape_timeout: 10s
+
+    evaluation_interval: 1m
+  ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_write
+  remoteWrite: []
+  ## https://prometheus.io/docs/prometheus/latest/configuration/configuration/#remote_read
+
+  remoteRead: []
+
+  extraArgs: {}
+
+  extraInitContainers: []
+
+  extraVolumeMounts: []
+
+  extraVolumes: []
+
+  extraHostPathMounts: []
+
+  extraConfigmapMounts: []
+
+  extraSecretMounts: []
+
+  configMapOverrideName: ""
+
+  ingress:
+
+    enabled: true
+
+    annotations:
+      kubernetes.io/ingress.class: nginx
+
+    extraLabels: {}
+
+    hosts: 
+      - prometheus-tools.co.reefplatform.com
+  
+    extraPaths:
+    - path: /*
+      backend:
+        serviceName: reef-prometheus-server
+        servicePort: 80
+
+    tls: []
+
+  hostAliases: []
+
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+  tolerations: []
+
+  ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
+  nodeSelector: {}
+
+  affinity: {}
+
+  ## ref: https://kubernetes.io/docs/concepts/workloads/pods/disruptions/
+
+  podDisruptionBudget:
+    enabled: false
+    maxUnavailable: 1
+
+  ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
+
+  persistentVolume:
+
+    enabled: true
+
+    ## Ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+
+    accessModes:
+      - ReadWriteOnce
+
+    annotations: {}
+
+    existingClaim: "prometheus-pvc"
+
+    mountPath: /data
+
+    size: 8Gi
+
+    subPath: ""
+
+  emptyDir:
+
+    sizeLimit: ""
+
+  podAnnotations: {}
+
+  podLabels: {}
+
+  alertmanagers:
+  - scheme: http
+    static_configs:
+    - targets:
+      - "reef-prometheus-alertmanager.monitoring.svc.cluster.local"
+
+  ## Ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/
+  podSecurityPolicy:
+    annotations: {}
+
+  replicaCount: 1
+
+  deploymentAnnotations: {}
+
+  statefulSet:
+
+    enabled: false
+
+    annotations: {}
+    labels: {}
+    podManagementPolicy: OrderedReady
+
+    headless:
+      annotations: {}
+      labels: {}
+      servicePort: 80
+      gRPC:
+        enabled: false
+        servicePort: 10901
+        # nodePort: 10901
+
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+
+  readinessProbeInitialDelay: 30
+  readinessProbePeriodSeconds: 5
+  readinessProbeTimeout: 4
+  readinessProbeFailureThreshold: 3
+  readinessProbeSuccessThreshold: 1
+  livenessProbeInitialDelay: 30
+  livenessProbePeriodSeconds: 15
+  livenessProbeTimeout: 10
+  livenessProbeFailureThreshold: 3
+  livenessProbeSuccessThreshold: 1
+
+  ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
+
+  resources: {}
+
+  ## Ref: https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler
+  verticalAutoscaler:
+
+  dnsConfig: {}
+
+  securityContext:
+    runAsUser: 65534
+    runAsNonRoot: true
+    runAsGroup: 65534
+    fsGroup: 65534
+
+  service:
+    annotations: {}
+    labels: {}
+    clusterIP: ""
+
+    ## Ref: https://kubernetes.io/docs/user-guide/services/#external-ips
+
+    externalIPs: []
+
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    servicePort: 80
+    sessionAffinity: None
+    type: ClusterIP
+
+    gRPC:
+      enabled: false
+      servicePort: 10901
+
+    statefulsetReplica:
+      enabled: false
+      replica: 0
+
+  terminationGracePeriodSeconds: 300
+
+  retention: "15d"
+
+pushgateway:
+
+  enabled: true
+
+  ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
+
+  name: pushgateway
+
+  image:
+    repository: prom/pushgateway
+    tag: v1.3.1
+    pullPolicy: IfNotPresent
+
+  priorityClassName: ""
+
+  extraArgs: {}
+
+  extraInitContainers: []
+
+  ingress:
+
+    annotations: {}
+
+    hosts: []
+
+    extraPaths: []
+
+    tls: []
+
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+  tolerations: []
+
+  nodeSelector: {}
+
+  podAnnotations: {}
+
+  podLabels: {}
+
+  ## Ref: https://kubernetes.io/docs/concepts/policy/pod-security-policy/
+  podSecurityPolicy:
+    annotations: {}
+
+  replicaCount: 1
+
+  deploymentAnnotations: {}
+
+  podDisruptionBudget:
+    enabled: false
+    maxUnavailable: 1
+
+  resources: {}
+
+  dnsConfig: {}
+
+  securityContext:
+    runAsUser: 65534
+    runAsNonRoot: true
+
+  service:
+    annotations:
+      prometheus.io/probe: pushgateway
+    labels: {}
+    clusterIP: ""
+
+    externalIPs: []
+
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    servicePort: 9091
+    type: ClusterIP
+
+  persistentVolume:
+
+    enabled: false
+
+    accessModes:
+      - ReadWriteOnce
+
+    existingClaim: ""
+
+    mountPath: /data
+
+    size: 2Gi
+
+    subPath: ""
+
+alertmanagerFiles:
+  alertmanager.yml:
+
+    global:
+ 
+## Prometheus server ConfigMap entries
+serverFiles:
+
+  ## Ref: https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/
+  alerting_rules.yml:
+    groups:
+    - name: Instances
+      rules:
+      - alert: InstanceDown
+        expr: up == 0
+        for: 5m
+        labels:
+          severity: page
+        annotations:
+          description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes.'
+          summary: 'Instance {{ $labels.instance }} down'
+    - name: kubernetes-resources Alerts
+      rules:
+      - alert: KubeCPUOvercommit
+        expr: sum(namespace_name:kube_pod_container_resource_requests_cpu_cores:sum)/sum(node:node_num_cpu:sum) > (count(node:node_num_cpu:sum)-1) / count(node:node_num_cpu:sum)
+        for: 5m
+        labels:
+          severity: critical
+          cluster: digital-ip-cluster
+          env: dev
+        annotations:
+         summary: Cluster has overcommitted CPU resource requests for Pods and cannot tolerate node failure.
+         runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubecpuovercommit
+
+      - alert: KubeMemOvercommit
+        expr: sum(namespace_name:kube_pod_container_resource_requests_memory_bytes:sum)/sum(node_memory_MemTotal_bytes)>(count(node:node_num_cpu:sum)-1)/count(node:node_num_cpu:sum)
+        for: 5m
+        labels:
+          severity: critical
+          cluster: digital-ip-cluster
+          env: dev
+        annotations:
+          summary: Cluster has overcommitted memory resource requests for Pods and cannot tolerate node failure.
+
+
+    - name: Node Alerts
+      rules:
+      - alert: HostOutOfMemory
+        expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < 10
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Host out of memory (instance {{ $labels.instance }})"
+          description: "Node memory is filling up (< 10% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: HostMemoryUnderMemoryPressure
+        expr: rate(node_vmstat_pgmajfault[1m]) > 1000
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Host memory under memory pressure (instance {{ $labels.instance }})"
+          description: "The node is under heavy memory pressure. High rate of major page faults\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: HostUnusualNetworkThroughputIn
+        expr: sum by (instance) (irate(node_network_receive_bytes_total[2m])) / 1024 / 1024 > 100
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Host unusual network throughput in (instance {{ $labels.instance }})"
+          description: "Host network interfaces are probably receiving too much data (> 100 MB/s)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: HostUnusualNetworkThroughputOut
+        expr: sum by (instance) (irate(node_network_transmit_bytes_total[2m])) / 1024 / 1024 > 100
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Host unusual network throughput out (instance {{ $labels.instance }})"
+          description: "Host network interfaces are probably sending too much data (> 100 MB/s)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: HostUnusualDiskReadRate
+        expr: sum by (instance) (irate(node_disk_read_bytes_total[2m])) / 1024 / 1024 > 50
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Host unusual disk read rate (instance {{ $labels.instance }})"
+          description: "Disk is probably reading too much data (> 50 MB/s)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: HostUnusualDiskWriteRate
+        expr: sum by (instance) (irate(node_disk_written_bytes_total[2m])) / 1024 / 1024 > 50
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Host unusual disk write rate (instance {{ $labels.instance }})"
+          description: "Disk is probably writing too much data (> 50 MB/s)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: HostOutOfDiskSpace
+        expr: (node_filesystem_avail_bytes{mountpoint="/rootfs"}  * 100) / node_filesystem_size_bytes{mountpoint="/rootfs"} < 10
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Host out of disk space (instance {{ $labels.instance }})"
+          description: "Disk is almost full (< 10% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: HostDiskWillFillIn4Hours
+        expr: predict_linear(node_filesystem_free_bytes{fstype!~"tmpfs"}[1h], 4 * 3600) < 0
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Host disk will fill in 4 hours (instance {{ $labels.instance }})"
+          description: "Disk will fill in 4 hours at current write rate\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: HostOutOfInodes
+        expr: node_filesystem_files_free{mountpoint ="/rootfs"} / node_filesystem_files{mountpoint ="/rootfs"} * 100 < 10
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Host out of inodes (instance {{ $labels.instance }})"
+          description: "Disk is almost running out of available inodes (< 10% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: HostUnusualDiskReadLatency
+        expr: rate(node_disk_read_time_seconds_total[1m]) / rate(node_disk_reads_completed_total[1m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Host unusual disk read latency (instance {{ $labels.instance }})"
+          description: "Disk latency is growing (read operations > 100ms)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: HostUnusualDiskWriteLatency
+        expr: rate(node_disk_write_time_seconds_total[1m]) / rate(node_disk_writes_completed_total[1m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Host unusual disk write latency (instance {{ $labels.instance }})"
+          description: "Disk latency is growing (write operations > 100ms)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: HostHighCpuLoad
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Host high CPU load (instance {{ $labels.instance }})"
+          description: "CPU load is > 80%\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: HostSwapIsFillingUp
+        expr: (1 - (node_memory_SwapFree_bytes / node_memory_SwapTotal_bytes)) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Host swap is filling up (instance {{ $labels.instance }})"
+          description: "Swap is filling up (>80%)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: HostSystemdServiceCrashed
+        expr: node_systemd_unit_state{state="failed"} == 1
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Host SystemD service crashed (instance {{ $labels.instance }})"
+          description: "SystemD service crashed\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: HostPhysicalComponentTooHot
+        expr: node_hwmon_temp_celsius > 75
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Host physical component too hot (instance {{ $labels.instance }})"
+          description: "Physical hardware component too hot\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: HostNodeOvertemperatureAlarm
+        expr: node_hwmon_temp_alarm == 1
+        for: 5m
+        labels:
+          severity: critical
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Host node overtemperature alarm (instance {{ $labels.instance }})"
+          description: "Physical node temperature alarm triggered\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: HostRaidArrayGotInactive
+        expr: node_md_state{state="inactive"} > 0
+        for: 5m
+        labels:
+          severity: critical
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Host RAID array got inactive (instance {{ $labels.instance }})"
+          description: "RAID array {{ $labels.device }} is in degraded state due to one or more disks failures. Number of spare drives is insufficient to fix issue automatically.\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: HostRaidDiskFailure
+        expr: node_md_disks{state="fail"} > 0
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Host RAID disk failure (instance {{ $labels.instance }})"
+          description: "At least one device in RAID array on {{ $labels.instance }} failed. Array {{ $labels.md_device }} needs attention and possibly a disk swap\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: HostKernelVersionDeviations
+        expr: count(sum(label_replace(node_uname_info, "kernel", "$1", "release", "([0-9]+.[0-9]+.[0-9]+).*")) by (kernel)) > 1
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Host kernel version deviations (instance {{ $labels.instance }})"
+          description: "Different kernel versions are running\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: HostOomKillDetected
+        expr: increase(node_vmstat_oom_kill[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Host OOM kill detected (instance {{ $labels.instance }})"
+          description: "OOM kill detected\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: HostEdacCorrectableErrorsDetected
+        expr: increase(node_edac_correctable_errors_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: info
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Host EDAC Correctable Errors detected (instance {{ $labels.instance }})"
+
+      - alert: HostEdacUncorrectableErrorsDetected
+        expr: node_edac_uncorrectable_errors_total > 0
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Host EDAC Uncorrectable Errors detected (instance {{ $labels.instance }})"
+
+      - alert: HostNetworkReceiveErrors
+        expr: increase(node_network_receive_errs_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Host Network Receive Errors (instance {{ $labels.instance }})"
+
+      - alert: HostNetworkTransmitErrors
+        expr: increase(node_network_transmit_errs_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Host Network Transmit Errors (instance {{ $labels.instance }})"
+
+    - name: Kubernetes Alerts
+      rules:
+      - alert: KubernetesNodeReady
+        expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes Node ready (instance {{ $labels.instance }})"
+          description: "Node {{ $labels.node }} has been unready for a long time\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesMemoryPressure
+        expr: kube_node_status_condition{condition="MemoryPressure",status="true"} == 1
+        for: 5m
+        labels:
+          severity: critical
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes memory pressure (instance {{ $labels.instance }})"
+          description: "{{ $labels.node }} has MemoryPressure condition\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesDiskPressure
+        expr: kube_node_status_condition{condition="DiskPressure",status="true"} == 1
+        for: 5m
+        labels:
+          severity: critical
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes disk pressure (instance {{ $labels.instance }})"
+          description: "{{ $labels.node }} has DiskPressure condition\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesOutOfDisk
+        expr: kube_node_status_condition{condition="OutOfDisk",status="true"} == 1
+        for: 5m
+        labels:
+          severity: critical
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes out of disk (instance {{ $labels.instance }})"
+          description: "{{ $labels.node }} has OutOfDisk condition\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesJobFailed
+        expr: kube_job_status_failed > 0
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes Job failed (instance {{ $labels.instance }})"
+          description: "Job {{$labels.namespace}}/{{$labels.exported_job}} failed to complete\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesCronjobSuspended
+        expr: kube_cronjob_spec_suspend != 0
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes CronJob suspended (instance {{ $labels.instance }})"
+          description: "CronJob {{ $labels.namespace }}/{{ $labels.cronjob }} is suspended\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesPersistentvolumeclaimPending
+        expr: kube_persistentvolumeclaim_status_phase{phase="Pending"} == 1
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes PersistentVolumeClaim pending (instance {{ $labels.instance }})"
+          description: "PersistentVolumeClaim {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is pending\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesVolumeOutOfDiskSpace
+        expr: kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes * 100 < 10
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes Volume out of disk space (instance {{ $labels.instance }})"
+          description: "Volume is almost full (< 10% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesVolumeFullInFourDays
+        expr: predict_linear(kubelet_volume_stats_available_bytes[6h], 4 * 24 * 3600) < 0
+        for: 5m
+        labels:
+          severity: critical
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes Volume full in four days (instance {{ $labels.instance }})"
+          description: "{{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is expected to fill up within four days. Currently {{ $value | humanize }}% is available.\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesPersistentvolumeError
+        expr: kube_persistentvolume_status_phase{phase=~"Failed|Pending",job="kube-state-metrics"} > 0
+        for: 5m
+        labels:
+          severity: critical
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes PersistentVolume error (instance {{ $labels.instance }})"
+          description: "Persistent volume is in bad state\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesStatefulsetDown
+        expr: (kube_statefulset_status_replicas_ready / kube_statefulset_status_replicas_current) != 1
+        for: 5m
+        labels:
+          severity: critical
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes StatefulSet down (instance {{ $labels.instance }})"
+          description: "A StatefulSet went down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesHpaScalingAbility
+        expr: kube_hpa_status_condition{condition="false", status="AbleToScale"} == 1
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes HPA scaling ability (instance {{ $labels.instance }})"
+          description: "Pod is unable to scale\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesHpaMetricAvailability
+        expr: kube_hpa_status_condition{condition="false", status="ScalingActive"} == 1
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes HPA metric availability (instance {{ $labels.instance }})"
+          description: "HPA is not able to colelct metrics\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesHpaScaleCapability
+        expr: kube_hpa_status_desired_replicas >= kube_hpa_spec_max_replicas
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes HPA scale capability (instance {{ $labels.instance }})"
+          description: "The maximum number of desired Pods has been hit\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesPodNotHealthy
+        expr: min_over_time(sum by (namespace, pod) (kube_pod_status_phase{phase=~"Pending|Unknown|Failed"})[1h:]) > 0
+        for: 5m
+        labels:
+          severity: critical
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes Pod not healthy (instance {{ $labels.instance }})"
+          description: "Pod has been in a non-ready state for longer than an hour.\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesPodCrashLooping
+        expr: rate(kube_pod_container_status_restarts_total[15m]) * 60 * 5 > 5
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes pod crash looping (instance {{ $labels.instance }})"
+          description: "Pod {{ $labels.pod }} is crash looping\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesReplicassetMismatch
+        expr: kube_replicaset_spec_replicas != kube_replicaset_status_ready_replicas
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes ReplicasSet mismatch (instance {{ $labels.instance }})"
+          description: "Deployment Replicas mismatch\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesDeploymentReplicasMismatch
+        expr: kube_deployment_spec_replicas != kube_deployment_status_replicas_available
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes Deployment replicas mismatch (instance {{ $labels.instance }})"
+          description: "Deployment Replicas mismatch\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesStatefulsetReplicasMismatch
+        expr: kube_statefulset_status_replicas_ready != kube_statefulset_status_replicas
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes StatefulSet replicas mismatch (instance {{ $labels.instance }})"
+          description: "A StatefulSet has not matched the expected number of replicas for longer than 15 minutes.\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesDeploymentGenerationMismatch
+        expr: kube_deployment_status_observed_generation != kube_deployment_metadata_generation
+        for: 5m
+        labels:
+          severity: critical
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes Deployment generation mismatch (instance {{ $labels.instance }})"
+          description: "A Deployment has failed but has not been rolled back.\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesStatefulsetGenerationMismatch
+        expr: kube_statefulset_status_observed_generation != kube_statefulset_metadata_generation
+        for: 5m
+        labels:
+          severity: critical
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes StatefulSet generation mismatch (instance {{ $labels.instance }})"
+          description: "A StatefulSet has failed but has not been rolled back.\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesStatefulsetUpdateNotRolledOut
+        expr: max without (revision) (kube_statefulset_status_current_revision unless kube_statefulset_status_update_revision) * (kube_statefulset_replicas != kube_statefulset_status_replicas_updated)
+        for: 5m
+        labels:
+          severity: critical
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes StatefulSet update not rolled out (instance {{ $labels.instance }})"
+          description: "StatefulSet update has not been rolled out.\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesDaemonsetRolloutStuck
+        expr: kube_daemonset_status_number_ready / kube_daemonset_status_desired_number_scheduled * 100 < 100 or kube_daemonset_status_desired_number_scheduled - kube_daemonset_status_current_number_scheduled > 0
+        for: 5m
+        labels:
+          severity: critical
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes DaemonSet rollout stuck (instance {{ $labels.instance }})"
+          description: "Some Pods of DaemonSet are not scheduled or not ready\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesDaemonsetMisscheduled
+        expr: kube_daemonset_status_number_misscheduled > 0
+        for: 5m
+        labels:
+          severity: critical
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes DaemonSet misscheduled (instance {{ $labels.instance }})"
+          description: "Some DaemonSet Pods are running where they are not supposed to run\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesCronjobTooLong
+        expr: time() - kube_cronjob_next_schedule_time > 3600
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes CronJob too long (instance {{ $labels.instance }})"
+          description: "CronJob {{ $labels.namespace }}/{{ $labels.cronjob }} is taking more than 1h to complete.\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesJobCompletion
+        expr: kube_job_spec_completions - kube_job_status_succeeded > 0 or kube_job_status_failed > 0
+        for: 5m
+        labels:
+          severity: critical
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes job completion (instance {{ $labels.instance }})"
+          description: "Kubernetes Job failed to complete\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesApiServerErrors
+        expr: sum(rate(apiserver_request_count{job="apiserver",code=~"^(?:5..)$"}[2m])) / sum(rate(apiserver_request_count{job="apiserver"}[2m])) * 100 > 3
+        for: 5m
+        labels:
+          severity: critical
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes API server errors (instance {{ $labels.instance }})"
+          description: "Kubernetes API server is experiencing high error rate\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesApiClientErrors
+        expr: (sum(rate(rest_client_requests_total{code=~"(4|5).."}[2m])) by (instance, job) / sum(rate(rest_client_requests_total[2m])) by (instance, job)) * 100 > 1
+        for: 5m
+        labels:
+          severity: critical
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes API client errors (instance {{ $labels.instance }})"
+          description: "Kubernetes API client is experiencing high error rate\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesClientCertificateExpiresNextWeek
+        expr: apiserver_client_certificate_expiration_seconds_count{job="apiserver"} > 0 and histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="apiserver"}[5m]))) < 7*24*60*60
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes client certificate expires next week (instance {{ $labels.instance }})"
+          description: "A client certificate used to authenticate to the apiserver is expiring next week.\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesClientCertificateExpiresSoon
+        expr: apiserver_client_certificate_expiration_seconds_count{job="apiserver"} > 0 and histogram_quantile(0.01, sum by (job, le) (rate(apiserver_client_certificate_expiration_seconds_bucket{job="apiserver"}[5m]))) < 24*60*60
+        for: 5m
+        labels:
+          severity: critical
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes client certificate expires soon (instance {{ $labels.instance }})"
+          description: "A client certificate used to authenticate to the apiserver is expiring in less than 24.0 hours.\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+      - alert: KubernetesApiServerLatency
+        expr: histogram_quantile(0.99, sum(apiserver_request_latencies_bucket{verb!~"CONNECT|WATCHLIST|WATCH|PROXY"}) WITHOUT (instance, resource)) / 1e+06 > 1
+        for: 5m
+        labels:
+          severity: warning
+          cluster: digital-ip-cluster
+        annotations:
+          summary: "Kubernetes API server latency (instance {{ $labels.instance }})"
+          description: "Kubernetes API server has a 99th percentile latency of {{ $value }} seconds for {{ $labels.verb }} {{ $labels.resource }}.\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+  ## DEPRECATED DEFAULT VALUE, unless explicitly naming your files, please use alerting_rules.yml
+  alerts: {}
+
+  ## Ref: https://prometheus.io/docs/prometheus/latest/configuration/recording_rules/
+  recording_rules.yml: {}
+  ## DEPRECATED DEFAULT VALUE, unless explicitly naming your files, please use recording_rules.yml
+  rules: {}
+
+  prometheus.yml:
+    rule_files:
+      - /etc/config/recording_rules.yml
+      - /etc/config/alerting_rules.yml
+      - /etc/config/rules
+      - /etc/config/alerts
+
+    scrape_configs:
+      - job_name: prometheus
+        static_configs:
+          - targets:
+            - localhost:9090
+  
+      - job_name: 'kubernetes-apiservers'
+
+        kubernetes_sd_configs:
+          - role: endpoints
+
+        scheme: https
+
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+
+          insecure_skip_verify: true
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+            action: keep
+            regex: default;kubernetes;https
+
+      - job_name: 'kubernetes-nodes'
+
+        scheme: https
+
+        tls_config:
+
+          insecure_skip_verify: true
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+
+        kubernetes_sd_configs:
+          - role: node
+
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
+          - target_label: __address__
+            replacement: kubernetes.default.svc:443
+          - source_labels: [__meta_kubernetes_node_name]
+            regex: (.+)
+            target_label: __metrics_path__
+            replacement: /api/v1/nodes/$1/proxy/metrics
+
+
+      - job_name: 'kubernetes-nodes-cadvisor'
+
+        scheme: https
+
+        tls_config:
+
+          insecure_skip_verify: true
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+
+        kubernetes_sd_configs:
+          - role: node
+
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
+          - target_label: __address__
+            replacement: kubernetes.default.svc:443
+          - source_labels: [__meta_kubernetes_node_name]
+            regex: (.+)
+            target_label: __metrics_path__
+            replacement: /api/v1/nodes/$1/proxy/metrics/cadvisor
+
+      - job_name: 'kubernetes-service-endpoints'
+
+        kubernetes_sd_configs:
+          - role: endpoints
+
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scheme]
+            action: replace
+            target_label: __scheme__
+            regex: (https?)
+          - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+            action: replace
+            target_label: __address__
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+          - action: labelmap
+            regex: __meta_kubernetes_service_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_service_name]
+            action: replace
+            target_label: kubernetes_name
+          - source_labels: [__meta_kubernetes_pod_node_name]
+            action: replace
+            target_label: kubernetes_node
+
+      - job_name: 'kubernetes-service-endpoints-slow'
+
+        scrape_interval: 5m
+        scrape_timeout: 30s
+
+        kubernetes_sd_configs:
+          - role: endpoints
+
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape_slow]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scheme]
+            action: replace
+            target_label: __scheme__
+            regex: (https?)
+          - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+            action: replace
+            target_label: __address__
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+          - action: labelmap
+            regex: __meta_kubernetes_service_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_service_name]
+            action: replace
+            target_label: kubernetes_name
+          - source_labels: [__meta_kubernetes_pod_node_name]
+            action: replace
+            target_label: kubernetes_node
+
+      - job_name: 'prometheus-pushgateway'
+        honor_labels: true
+
+        kubernetes_sd_configs:
+          - role: service
+
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_probe]
+            action: keep
+            regex: pushgateway
+
+      - job_name: 'kubernetes-services'
+
+        metrics_path: /probe
+        params:
+          module: [http_2xx]
+
+        kubernetes_sd_configs:
+          - role: service
+
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_probe]
+            action: keep
+            regex: true
+          - source_labels: [__address__]
+            target_label: __param_target
+          - target_label: __address__
+            replacement: blackbox
+          - source_labels: [__param_target]
+            target_label: instance
+          - action: labelmap
+            regex: __meta_kubernetes_service_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_service_name]
+            target_label: kubernetes_name
+
+      - job_name: 'kubernetes-pods'
+
+        kubernetes_sd_configs:
+          - role: pod
+
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scheme]
+            action: replace
+            regex: (https?)
+            target_label: __scheme__
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: kubernetes_pod_name
+          - source_labels: [__meta_kubernetes_pod_phase]
+            regex: Pending|Succeeded|Failed
+            action: drop
+
+      - job_name: 'kubernetes-pods-slow'
+
+        scrape_interval: 5m
+        scrape_timeout: 30s
+
+        kubernetes_sd_configs:
+          - role: pod
+
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape_slow]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scheme]
+            action: replace
+            regex: (https?)
+            target_label: __scheme__
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: kubernetes_pod_name
+          - source_labels: [__meta_kubernetes_pod_phase]
+            regex: Pending|Succeeded|Failed
+            action: drop
+
+extraScrapeConfigs:
+
+networkPolicy:
+
+forceNamespace: null
