@@ -13,6 +13,7 @@ resource "azurerm_container_registry" "acr-dev" {
   }
 }
 
+
 #Import Container Image to Azure Container Registries
 resource "null_resource" "image" {
 
